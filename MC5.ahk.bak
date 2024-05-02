@@ -1,0 +1,55 @@
+#Persistent
+SetBatchLines, -1  ; 스크립트 실행 성능 향상을 위해 라인 수 체크를 비활성화
+
+; 수정 키 설정
+^+!i::ToggleMove("up", true)
+^+!k::ToggleMove("down", true)
+^+!j::ToggleMove("left", true)
+^+!l::ToggleMove("right", true)
+
+^+!i Up::ToggleMove("up", false)
+^+!k Up::ToggleMove("down", false)
+^+!j Up::ToggleMove("left", false)
+^+!l Up::ToggleMove("right", false)
+
+^+!u::MouseLeftClick()
+^+!o::MouseRightClick()
+
+MoveState := {}  ; 방향 상태를 저장할 객체 초기화
+
+ToggleMove(dir, state) {
+    MoveState[dir] := state  ; 방향 상태 업데이트
+    SetTimer, DoMouseMove, 10  ; 움직임 처리를 위한 타이머 시작
+}
+
+DoMouseMove:
+    newX := 0, newY := 0
+    distance := 5  ; 움직임 거리 설정
+    if (MoveState["up"]) {
+        newY -= distance
+    }
+    if (MoveState["down"]) {
+        newY += distance
+    }
+    if (MoveState["left"]) {
+        newX -= distance
+    }
+    if (MoveState["right"]) {
+        newX += distance
+    }
+    if (newX != 0 or newY != 0) {
+        MouseMove, newX, newY, 0, R  ; 현재 위치에서 상대적으로 마우스 움직임
+    } else {
+        SetTimer, DoMouseMove, Off  ; 모든 방향 키가 해제되면 타이머 정지
+    }
+    return
+
+MouseLeftClick() {
+    MouseClick, left
+}
+
+MouseRightClick() {
+    MouseClick, right
+}
+
+return
