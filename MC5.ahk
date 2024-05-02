@@ -12,20 +12,24 @@ return
 ^+!o::HandleClick("right")
 
 HandleMovement() {
-    static lastTime = 0
+    static lastTime := 0
     if (A_TickCount - lastTime < 10)
         return
     lastTime := A_TickCount 
 
-    x := y := 0
-    if(GetKeyState("i", "P") and GetKeyState("j", "P"))
-        MouseMoveDiagonal(-1, -1, "i", "j")
-    if(GetKeyState("i", "P") and GetKeyState("l", "P"))
-        MouseMoveDiagonal(1, -1, "i", "l")
-    if(GetKeyState("k", "P") and GetKeyState("j", "P"))
-        MouseMoveDiagonal(-1, 1, "k", "j")
-    if(GetKeyState("k", "P") and GetKeyState("l", "P"))
-        MouseMoveDiagonal(1, 1, "k", "l")
+    PerformMovement("i", "j", -1, -1)
+    PerformMovement("i", "l", 1, -1)
+    PerformMovement("k", "j", -1, 1)
+    PerformMovement("k", "l", 1, 1)
+    SingleDirectionMove()
+}
+
+PerformMovement(key1, key2, xFactor, yFactor) {
+    if (GetKeyState(key1, "P") and GetKeyState(key2, "P"))
+        MouseMove(xFactor, yFactor, key1, key2)
+}
+
+SingleDirectionMove() {
     if (GetKeyState("i", "P"))
         MouseMove(0, -1, "i")
     if (GetKeyState("k", "P"))
@@ -34,37 +38,26 @@ HandleMovement() {
         MouseMove(-1, 0, "j")
     if (GetKeyState("l", "P"))
         MouseMove(1, 0, "l")
-    
-    if (x != 0 or y != 0)
-        MouseMove, x, y, 0, R
 }
-
-MouseMove(xFactor, yFactor, key) {
-    static distance = 10
-    While GetKeyState(key, "P") {
-        MouseMove, xFactor * distance, yFactor * distance, 0, R
-        distance += 1
-        Sleep, 10
+MouseMove(xFactor, yFactor, key1, key2 := "") {
+    static BaseDistance := 10
+    if (key2 = "") {
+        ; 단일 키에 대한 처리
+        While GetKeyState(key1, "P") {
+            MouseMove, xFactor * BaseDistance, yFactor * BaseDistance, 0, R
+            BaseDistance += 1
+            Sleep, 10
+        }
+    } else {
+        ; 두 키 조합에 대한 처리
+        While GetKeyState(key1, "P") and GetKeyState(key2, "P") {
+            MouseMove, xFactor * BaseDistance, yFactor * BaseDistance, 0, R
+            BaseDistance += 1
+            Sleep, 10
+        }
     }
-    distance := 5
+    BaseDistance := 5
 }
-
-MouseMoveDiagonal(xFactor, yFactor, k1, k2) {
-    static distance = 10
-    While GetKeyState(k1, "P") and GetKeyState(k2, "P"){
-        MouseMove, xFactor * distance, yFactor * distance, 0, R
-        distance += 1
-        Sleep, 10
-    }
-    distance := 5
-}
-
 HandleClick(d){
     MouseClick, %d%
-}
-MouseLeftClick() {
-    MouseClick, left
-}
-MouseRightClick() {
-    MouseClick, right
 }
