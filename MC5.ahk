@@ -24,39 +24,26 @@ HandleMovement() {
     SingleDirectionMove()
 }
 
-PerformMovement(key1, key2, xFactor, yFactor) {
-    if (GetKeyState(key1, "P") and GetKeyState(key2, "P"))
-        MouseMove(xFactor, yFactor, key1, key2)
+PerformMovement(k1, k2, dx, dy) {
+    if (GetKeyState(k1, "P") and GetKeyState(k2, "P"))
+        MouseMove(dx, dy, k1, k2)
 }
 
 SingleDirectionMove() {
-    if (GetKeyState("i", "P"))
-        MouseMove(0, -1, "i")
-    if (GetKeyState("k", "P"))
-        MouseMove(0, 1, "k")
-    if (GetKeyState("j", "P"))
-        MouseMove(-1, 0, "j")
-    if (GetKeyState("l", "P"))
-        MouseMove(1, 0, "l")
+    static directions := {"i": [0, -1], "k": [0, 1], "j": [-1, 0], "l": [1, 0]}
+    for key, dir in directions
+        if (GetKeyState(key, "P"))
+            MouseMove(dir[1], dir[2], key)
 }
-MouseMove(xFactor, yFactor, key1, key2 := "") {
-    static BaseDistance := 10
-    if (key2 = "") {
-        ; 단일 키에 대한 처리
-        While GetKeyState(key1, "P") {
-            MouseMove, xFactor * BaseDistance, yFactor * BaseDistance, 0, R
-            BaseDistance += 1
-            Sleep, 10
-        }
-    } else {
-        ; 두 키 조합에 대한 처리
-        While GetKeyState(key1, "P") and GetKeyState(key2, "P") {
-            MouseMove, xFactor * BaseDistance, yFactor * BaseDistance, 0, R
-            BaseDistance += 1
-            Sleep, 10
-        }
+
+MouseMove(dx, dy, k1, k2 := "") {
+    static distance := 10
+    while (k2 ? (GetKeyState(k1, "P") and GetKeyState(k2, "P")) : GetKeyState(k1, "P")) {
+        MouseMove, dx * distance, dy * distance, 0, R
+        distance += 1
+        Sleep, 10
     }
-    BaseDistance := 5
+    distance := 5
 }
 HandleClick(d){
     MouseClick, %d%
