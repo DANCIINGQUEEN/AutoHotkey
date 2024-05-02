@@ -9,7 +9,31 @@ SetBatchLines, -1  ; Improves script performance by not checking the script's li
     HandleMovement()
 return
 
-^+!u::MouseLeftClick()
+; ^+!u::MouseLeftDoubleClick()
+; ^+!u::MouseLeftClick()
+^+!u::
+    if (A_PriorHotkey = A_ThisHotkey && A_TimeSincePriorHotkey < 300){
+        Click, 2
+        isDoubleClick := true  
+        SetTimer, ClearDoubleClick, Off  
+    }else {
+        isDoubleClick := false
+        SetTimer, ClearDoubleClick, -300 
+    }
+return
+
+ClearDoubleClick:
+    if (!isDoubleClick) Click
+    isDoubleClick := false  
+return
+
+#IfWinActive  
+    ~LButton::  
+        if (!A_TimeSincePriorHotkey || A_TimeSincePriorHotkey > 300)
+            isDoubleClick := false  
+return
+#IfWinActive
+
 ^+!o::MouseRightClick()
 
 
@@ -24,21 +48,24 @@ HandleMovement() {
     ; Determine direction
     x := y := 0
     if(GetKeyState("i", "P") and GetKeyState("j", "P"))
-        MouseMoveUpAndLeft(true)
+        MouseMoveDiagonal(-1, -1, "i", "j")
     if(GetKeyState("i", "P") and GetKeyState("l", "P"))
-        MouseMoveUpAndRight(true)
+        ; MouseMoveUpAndRight(true)
+        MouseMoveDiagonal(1, -1, "i", "l")
     if(GetKeyState("k", "P") and GetKeyState("j", "P"))
-        MouseMoveDownAndLeft(true)
+        ; MouseMoveDownAndLeft(true)
+        MouseMoveDiagonal(-1, 1, "k", "j")
     if(GetKeyState("k", "P") and GetKeyState("l", "P"))
-        MouseMoveDownAndRight(true)
+        ; MouseMoveDownAndRight(true)
+        MouseMoveDiagonal(1, 1, "k", "l")
     if (GetKeyState("i", "P"))
-        MouseMoveUp(true)
+        MouseMove(0, -1, "i")
     if (GetKeyState("k", "P"))
-        MouseMoveDown(true)
+        MouseMove(0, 1, "k")
     if (GetKeyState("j", "P"))
-        MouseMoveLeft(true)
+        MouseMove(-1, 0, "j")
     if (GetKeyState("l", "P"))
-        MouseMoveRight(true)
+        MouseMove(1, 0, "l")
     
 
     ; Move mouse
@@ -46,83 +73,21 @@ HandleMovement() {
         MouseMove, x, y, 0, R
 }
 
-MouseMoveFunction(direction, state){
-    static distance=10
-    
-}
-
-MouseMoveUpAndLeft(state){
+MouseMove(xFactor, yFactor, key) {
     static distance = 10
-    While GetKeyState("i", "P") and GetKeyState("j", "P") {
-        MouseMove, -distance, -distance, 0, R
-        distance += 0.7  ; Increase the distance for acceleration
-        Sleep, 10  ; Adjust the speed of movement
-    }
-    distance := 5  ; Reset distance when key is released
-}
-MouseMoveUpAndRight(state){
-    static distance = 10
-    While GetKeyState("i", "P") and GetKeyState("l", "P") {
-        MouseMove, distance, -distance, 0, R
-        distance += 0.7  ; Increase the distance for acceleration
-        Sleep, 10  ; Adjust the speed of movement
-    }
-    distance := 5  ; Reset distance when key is released
-}
-MouseMoveDownAndLeft(state){
-    static distance = 10
-    While GetKeyState("k", "P") and GetKeyState("j", "P") {
-        MouseMove, -distance, distance, 0, R
-        distance += 0.7  ; Increase the distance for acceleration
-        Sleep, 10  ; Adjust the speed of movement
-    }
-    distance := 5  ; Reset distance when key is released
-}
-MouseMoveDownAndRight(state){
-    static distance = 10
-    While GetKeyState("k", "P") and GetKeyState("l", "P") {
-        MouseMove, distance, distance, 0, R
-        distance += 0.7  ; Increase the distance for acceleration
-        Sleep, 10  ; Adjust the speed of movement
-    }
-    distance := 5  ; Reset distance when key is released
-}
-
-
-MouseMoveUp(state) {
-    static distance = 10
-    While GetKeyState("i", "P") {
-        MouseMove, 0, -distance, 0, R
-        distance += 0.7  
-        Sleep, 10  
-    }
-    distance := 5  
-}
-MouseMoveLeft(state) {
-    static distance = 10
-    While GetKeyState("j", "P") {
-        MouseMove, -distance, 0, 0, R
-        distance += 0.7
+    While GetKeyState(key, "P") {
+        MouseMove, xFactor * distance, yFactor * distance, 0, R
+        distance += 1
         Sleep, 10
     }
     distance := 5
 }
 
-MouseMoveDown(state) {
+MouseMoveDiagonal(xFactor, yFactor, k1, k2) {
     static distance = 10
-    While GetKeyState("k", "P") {
-        MouseMove, 0, distance, 0, R
-        distance += 0.7
-        Sleep, 10
-    }
-    distance := 5
-}
-
-MouseMoveRight(state) {
-    static distance = 10
-    While GetKeyState("l", "P") {
-        MouseMove, distance, 0, 0, R
-        distance += 0.7
+    While GetKeyState(k1, "P") and GetKeyState(k2, "P"){
+        MouseMove, xFactor * distance, yFactor * distance, 0, R
+        distance += 1
         Sleep, 10
     }
     distance := 5
@@ -130,6 +95,9 @@ MouseMoveRight(state) {
 
 MouseLeftClick() {
     MouseClick, left
+}
+MouseLeftDoubleClick() {
+    Click, 2
 }
 
 MouseRightClick() {
